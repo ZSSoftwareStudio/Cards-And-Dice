@@ -1,0 +1,28 @@
+<div
+  class="
+    d-flex
+    flex-column-reverse flex-md-row
+    align-items-center
+    justify-content-between
+    w-90
+    mx-auto
+    border
+    rounded
+    p-slider
+  "
+>
+  <div>
+    <h2 class="fw-bold mt-5 mt-lg-0">{{ product.title }}</h2>
+    <p class="my-4">{{ product.description.substring(0, 200) }}</p>
+    <a class="btn btn-primary" [routerLink]="'/products/' + product._id">
+      Shop Now
+    </a>
+  </div>
+  <div>
+    <img
+      class="rounded"
+      [src]="apiEndpoint + '/' + product.image"
+      width="300"
+    />
+  </div>
+</div>

@@ -1,0 +1,50 @@
+<div class="section" *ngIf="loading">
+  <div class="text-center">
+    <div class="spinner-border" style="width: 3rem; height: 3rem" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+</div>
+
+<div class="container section" *ngIf="!loading">
+  <div class="row g-2">
+    <div class="col-12 col-md-4">
+      <img
+        [src]="apiURL + '/' + product.image"
+        alt=""
+        class="img-fluid rounded w-100"
+      />
+    </div>
+    <div class="col-12 col-md-8 px-2 px-md-5 my-4 my-md-auto">
+      <h2>{{ product.title }}</h2>
+      <p class="text-muted my-3">
+        {{ product.description }}
+      </p>
+
+      <h5 class="text-primary my-3">
+        Price: <span class="text-muted">{{ currency }}{{ product.price }}</span>
+      </h5>
+
+      <button
+        class="btn btn-primary my-2"
+        (click)="addToCart(product)"
+        *ngIf="!this.hasOrder"
+      >
+        Add to Cart
+      </button>
+
+      <div class="d-flex align-items-center mt-5" *ngIf="this.hasOrder">
+        <button class="btn btn-primary btn-sm p-1" (click)="addToCart(product)">
+          <i class="bi bi-plus"></i>
+        </button>
+        <h4 class="h4 mx-4">{{ this.quantity }}</h4>
+        <button
+          class="btn btn-primary btn-sm p-1"
+          (click)="decrementProductQuantity(product)"
+        >
+          <i class="bi bi-dash"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

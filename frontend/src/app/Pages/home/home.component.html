@@ -1,0 +1,32 @@
+<div class="container-fluid bg-white">
+  <div class="row section">
+    <div class="col-lg-3 mb-lg-0 mb-2 d-none d-lg-block">
+      <app-categories [categories]="this.categories"></app-categories>
+    </div>
+    <div class="col-lg-9 my-auto">
+      <app-slider [sliderProducts]="sliderProducts"></app-slider>
+    </div>
+  </div>
+</div>
+<div class="section">
+  <div class="container">
+    <h1 class="h1 text-primary text-center mb-4">Featured Products</h1>
+    <div class="text-center" *ngIf="loading">
+      <div
+        class="spinner-border"
+        style="width: 3rem; height: 3rem"
+        role="status"
+      >
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+    <div class="row g-3 mt-3" *ngIf="!loading && products.length !== 0">
+      <div
+        class="col-12 col-sm-6 col-md-4 col-lg-3"
+        *ngFor="let product of products"
+      >
+        <app-card [product]="product"></app-card>
+      </div>
+    </div>
+  </div>
+</div>

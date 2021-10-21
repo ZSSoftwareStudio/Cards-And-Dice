@@ -1,0 +1,86 @@
+<app-dashboard>
+  <h1>Manage Coupon Codes</h1>
+  <button class="btn btn-primary my-2" (click)="addCoupon()">
+    Add New Coupon Code
+  </button>
+
+  <div class="my-4" *ngIf="!!coupons && coupons.length === 0">
+    <h4 class="text-muted">No Coupon Codes found to display</h4>
+  </div>
+
+  <div *ngIf="!!newCoupon" class="section my-4 p-5 bg-light rounded shadow-sm">
+    <h3 class="mb-5">Add New Coupon</h3>
+
+    <form class="row g-3" (ngSubmit)="uploadNewCouponToServer()">
+      <div class="col-md-6">
+        <label for="title" class="form-label">Coupon Code</label>
+        <input
+          type="text"
+          class="form-control"
+          id="title"
+          name="title"
+          [(ngModel)]="newCoupon.code"
+        />
+      </div>
+      <div class="col-md-6">
+        <label for="price" class="form-label">Discount(%)</label>
+        <input
+          type="number"
+          class="form-control"
+          id="price"
+          name="price"
+          [(ngModel)]="newCoupon.discount"
+        />
+      </div>
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary ms-0 m-2">
+          Add Coupon
+        </button>
+        <button class="btn btn-dark m-2" (click)="hideCoupon()">Hide</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="container-fluid bg-gray mt-4">
+    <div *ngIf="loading">
+      <div
+        class="spinner-border"
+        style="width: 3rem; height: 3rem"
+        role="status"
+      >
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+    <div class="table-responsive" *ngIf="coupons.length !== 0">
+      <table
+        class="table table-striped table-borderless table-hover"
+        *ngIf="!loading"
+      >
+        <thead>
+          <tr>
+            <th scope="col" style="width: 30%">Code</th>
+            <th scope="col" style="width: 30%">Discount</th>
+            <th scope="col" style="width: 30%">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let coupon of coupons">
+            <th scope="row">
+              {{ coupon.code }}
+            </th>
+            <td>{{ coupon.discount }}%</td>
+            <td>
+              <button
+                class="btn btn-primary"
+                type="button"
+                (click)="deleteCurrentCoupon(coupon)"
+              >
+                Delete
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</app-dashboard>

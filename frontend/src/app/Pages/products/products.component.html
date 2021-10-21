@@ -1,0 +1,60 @@
+<div class="container-fluid bg-gray">
+  <!-- If user is not searching products -->
+  <div class="row section" *ngIf="!search && products.length !== 0">
+    <div class="col-lg-3 mb-lg-0 mb-2 d-none d-lg-block">
+      <app-categories [categories]="this.categories"></app-categories>
+    </div>
+    <div class="col-lg-9">
+      <div class="text-center" *ngIf="loading">
+        <div
+          class="spinner-border"
+          style="width: 3rem; height: 3rem"
+          role="status"
+        >
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+      <div class="row g-2" *ngIf="!loading && products.length !== 0">
+        <div
+          class="col-12 col-sm-6 col-md-4 col-lg-3"
+          *ngFor="let product of products"
+        >
+          <app-card [product]="product"></app-card>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- If user is searching products -->
+  <div class="col-lg-10 mx-auto section" *ngIf="search">
+    <h2 class="text-center" *ngIf="products.length !== 0">
+      Searched Results for "{{ searchTerm }}"
+    </h2>
+    <h2 class="text-center" *ngIf="products.length === 0">
+      No Searched Results found for "{{ searchTerm }}"
+    </h2>
+    <br />
+    <div class="text-center" *ngIf="loading">
+      <div
+        class="spinner-border"
+        style="width: 3rem; height: 3rem"
+        role="status"
+      >
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+    <div class="row g-2" *ngIf="!loading">
+      <div
+        class="col-12 col-sm-6 col-md-4 col-lg-3"
+        *ngFor="let product of products"
+      >
+        <app-card [product]="product"></app-card>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-6 mx-auto text-center py-5" *ngIf="products.length === 0">
+    <img src="assets/no-data.png" alt="" class="img-fluid w-50 rounded mb-3" />
+    <h1 class="h3 text-muted mt-3">No Products Found!</h1>
+  </div>
+</div>

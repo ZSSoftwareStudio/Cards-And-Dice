@@ -1,0 +1,17 @@
+<app-dashboard>
+  <h1>Welcome to Dashboard</h1>
+  <p class="lead my-3" *ngIf="currentUser.role.toLowerCase() === 'user'">
+    Here you can view your previous orders, profile, change profile etc.
+  </p>
+  <p class="lead my-3" *ngIf="currentUser.role.toLowerCase() === 'staffuser'">
+    Here you can manage products, categories, orders, coupon codes etc.
+  </p>
+  <p class="lead my-3" *ngIf="currentUser.role.toLowerCase() === 'superuser'">
+    Here you can manage users, products, categories, orders, coupon codes etc.
+  </p>
+
+  <p class="lead fw-bold">
+    Not {{ currentUser.name }}?
+    <a class="text-primary" routerLink="/logout">Log Out</a>
+  </p>
+</app-dashboard>

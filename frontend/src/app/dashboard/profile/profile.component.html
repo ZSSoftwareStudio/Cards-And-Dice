@@ -1,0 +1,64 @@
+<app-dashboard>
+  <h1 class="mb-4">My Profile</h1>
+  <div *ngIf="!!profile">
+    <img
+      class="rounded-circle my-2"
+      [src]="
+        profile.image.substring(0, 4) === 'http'
+          ? profile.image
+          : apiURL + profile.image
+      "
+      [alt]="profile.name"
+      width="80px"
+      onerror="this.onerror=null; this.src='assets/default-avatar.png'"
+    />
+    <h5 class="fw-bold my-3">
+      Name - <span class="fw-light">{{ profile.name }}</span>
+    </h5>
+    <h5 class="fw-bold my-3">
+      Email Address - <span class="fw-light">{{ profile.email }}</span>
+    </h5>
+    <h5 class="fw-bold my-3">
+      Phone Number -
+      <span class="fw-light">{{
+        !!profile.phone ? profile.phone : "No Phone Number Provided"
+      }}</span>
+    </h5>
+    <h5 class="fw-bold my-3">
+      Address -
+      <span class="fw-light">{{
+        !!profile.address ? profile.address : "No Address Provided"
+      }}</span>
+    </h5>
+    <h5 class="fw-bold my-3">
+      State -
+      <span class="fw-light">{{
+        !!profile.state ? profile.state : "No State Provided"
+      }}</span>
+    </h5>
+    <h5 class="fw-bold my-3">
+      Country -
+      <span class="fw-light">{{
+        !!profile.country ? profile.country : "No Country Provided"
+      }}</span>
+    </h5>
+    <h5 class="fw-bold my-3">
+      Role -
+      <span class="fw-light" *ngIf="profile.role.toLowerCase() === 'user'"
+        >Normal User</span
+      >
+      <span class="fw-light" *ngIf="profile.role.toLowerCase() === 'staffuser'"
+        >Staff</span
+      >
+      <span class="fw-light" *ngIf="profile.role.toLowerCase() === 'superuser'"
+        >Admin</span
+      >
+    </h5>
+  </div>
+
+  <div class="section px-3" *ngIf="!!!profile">
+    <div class="spinner-border" style="width: 3rem; height: 3rem" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
+  </div>
+</app-dashboard>

@@ -1,0 +1,159 @@
+<app-dashboard>
+  <h1>Manage Categories</h1>
+
+  <button class="btn btn-primary my-2" (click)="addCategory()">
+    Add Category
+  </button>
+
+  <div class="my-4" *ngIf="!!categories && categories.length === 0">
+    <h4 class="text-muted">No Categories to display</h4>
+  </div>
+
+  <div class="container-fluid bg-gray mt-4" *ngIf="!!categories">
+    <div *ngIf="loading">
+      <div
+        class="spinner-border"
+        style="width: 3rem; height: 3rem"
+        role="status"
+      >
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+
+    <div
+      *ngIf="!!currentCategory"
+      class="section my-4 p-5 bg-light rounded shadow-sm"
+    >
+      <h3 class="mb-5">Editing "{{ currentCategory.title }}"</h3>
+
+      <form class="row g-3" (ngSubmit)="updateCurrentCategory()">
+        <div class="col-md-6">
+          <label for="title" class="form-label">Category Title</label>
+          <input
+            type="text"
+            class="form-control"
+            id="title"
+            name="title"
+            [(ngModel)]="currentCategory.title"
+          />
+        </div>
+
+        <div class="col-md-6">
+          <label for="image" class="form-label"
+            >Replace Category Image (If needed)</label
+          >
+          <input
+            class="form-control"
+            type="file"
+            id="image"
+            (change)="changeCategoryImage($event, currentCategory)"
+          />
+        </div>
+        <div class="col-12">
+          <button type="submit" class="btn btn-secondary ms-0 m-2">
+            Update Category
+          </button>
+          <button
+            class="btn btn-primary m-2"
+            (click)="deleteCurrentCategory(currentCategory)"
+          >
+            Delete Category
+          </button>
+          <button class="btn btn-dark m-2" (click)="hideCategory()">
+            Hide
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div
+      *ngIf="!!newCategory"
+      class="section my-4 p-5 bg-light rounded shadow-sm"
+    >
+      <h3 class="mb-5">Add New Category</h3>
+
+      <form class="row g-3" (ngSubmit)="uploadNewCategoryToServer()">
+        <div class="col-md-6">
+          <label for="title" class="form-label">Category Title</label>
+          <input
+            type="text"
+            class="form-control"
+            id="title"
+            name="title"
+            [(ngModel)]="newCategory.title"
+          />
+        </div>
+        <div class="col-md-6">
+          <label for="image" class="form-label">Category Image</label>
+          <input
+            class="form-control"
+            type="file"
+            id="image"
+            name="image"
+            (change)="onFileSelected($event)"
+          />
+        </div>
+        <div class="col-12">
+          <button type="submit" class="btn btn-primary ms-0 m-2">
+            Add Category
+          </button>
+          <button class="btn btn-dark m-2" (click)="hideCategory()">
+            Hide
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <div class="table-responsive">
+      <table
+        class="table table-striped table-borderless table-hover"
+        *ngIf="!loading && categories.length !== 0"
+      >
+        <thead>
+          <tr>
+            <th scope="col" style="width: 30%">Image</th>
+            <th scope="col" style="width: 30%">Title</th>
+            <th scope="col" style="width: 30%">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let category of categories">
+            <th scope="row">
+              <img
+                [src]="apiURL + '/' + category.image"
+                [alt]="category.title"
+                class="img-fluid rounded"
+                width="70px"
+              />
+            </th>
+            <td>{{ category.title }}</td>
+            <td>
+              <button
+                class="btn btn-primary"
+                type="button"
+                (click)="manageCategory(category)"
+                *ngIf="
+                  currentCategory === undefined ||
+                  currentCategory._id !== category._id
+                "
+              >
+                Manage
+              </button>
+              <button
+                class="btn btn-primary"
+                type="button"
+                (click)="hideCategory()"
+                *ngIf="
+                  currentCategory !== undefined &&
+                  currentCategory._id === category._id
+                "
+              >
+                Hide
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</app-dashboard>
