@@ -77,7 +77,17 @@ export class OrdersComponent implements OnInit {
   }
 
   changeCurrentOrder(order) {
-    this.currentOrder = order;
+    if (order !== undefined) {
+      const index = this.allOrders.indexOf(order);
+      this.currentOrder = {
+        ...order,
+        index: index,
+        products: JSON.parse(order.products),
+      };
+    } else {
+      this.currentOrder = order;
+    }
+
     if (this.currentOrder !== undefined) {
       let products = [];
       this.itemsLength = this.currentOrder.products.length;
@@ -100,10 +110,10 @@ export class OrdersComponent implements OnInit {
     this.GlobalService.userToken.subscribe((newToken) => {
       if (newToken !== null) {
         this.apiService
-          .markOrder(order._id, newToken)
+          .markOrder(order.id, newToken)
           .subscribe((data: { message: string }) => {
             alert(data.message);
-            let index = orders.indexOf(order);
+            let index = order.index;
             if (orders[index].status.toLowerCase() === 'incomplete') {
               orders[index] = {
                 ...orders[index],
@@ -130,7 +140,7 @@ export class OrdersComponent implements OnInit {
   deleteUnpaidOrder(order: any) {
     this.GlobalService.userToken.subscribe((newToken) => {
       if (newToken !== null) {
-        this.apiService.deleteUnPaidOrder(order._id, newToken).subscribe(() => {
+        this.apiService.deleteUnPaidOrder(order.id, newToken).subscribe(() => {
           const index = this.allOrders.indexOf(order);
           this.allOrders.splice(index, 1);
           this.orders = this.allOrders;
@@ -159,7 +169,7 @@ export class OrdersComponent implements OnInit {
 
   searchFilterFunction(text) {
     const newData = this.allOrders.filter((item) => {
-      const itemData = `${item._id.toUpperCase()}
+      const itemData = `${item.id}
         ${item.name.toUpperCase()}
         ${item.email.toUpperCase()}
         ${item.status.toUpperCase()}

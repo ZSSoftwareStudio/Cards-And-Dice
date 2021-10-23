@@ -1,5 +1,5 @@
 <div class="card p-2 w-100 mx-auto mx-sm-2">
-  <a [routerLink]="'/products/' + this.product._id">
+  <a [routerLink]="'/products/' + this.product.id">
     <div class="text-center">
       <img
         [src]="this.apiEndpoint + '/' + this.product.image"
@@ -9,7 +9,7 @@
     </div>
   </a>
   <div class="content">
-    <a [routerLink]="'/products/' + this.product._id">
+    <a [routerLink]="'/products/' + this.product.id">
       <div class="d-flex justify-content-between align-items-center">
         <span class="category text-dark">{{ this.product.title }}</span>
         <span class="price">{{ currency }}{{ this.product.price }}</span>

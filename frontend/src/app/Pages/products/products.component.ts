@@ -40,7 +40,7 @@ export class ProductsComponent implements OnInit {
         this.loading = true;
         this.apiService.getProducts().subscribe((data: Product[]) => {
           this.products = data.filter(
-            (product) => product.category._id === categoryId
+            (product) => product.category.id === categoryId
           );
           setTimeout(() => {
             this.loading = false;

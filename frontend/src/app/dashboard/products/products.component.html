@@ -100,10 +100,10 @@
             aria-label="Default select example"
             id="category"
             name="category"
-            [(ngModel)]="currentProduct.category._id"
+            [(ngModel)]="currentProduct.category"
           >
             <option selected>Select Category</option>
-            <option *ngFor="let category of categories" [value]="category._id">
+            <option *ngFor="let category of categories" [value]="category.id">
               {{ category.title }}
             </option>
           </select>
@@ -182,7 +182,7 @@
             [(ngModel)]="newProduct.category"
           >
             <option selected value="">Select Category</option>
-            <option *ngFor="let category of categories" [value]="category._id">
+            <option *ngFor="let category of categories" [value]="category.id">
               {{ category.title }}
             </option>
           </select>
@@ -249,7 +249,7 @@
                 (click)="manageProduct(product)"
                 *ngIf="
                   currentProduct === undefined ||
-                  currentProduct._id !== product._id
+                  currentProduct.id !== product.id
                 "
               >
                 Manage
@@ -260,7 +260,7 @@
                 (click)="hideProduct()"
                 *ngIf="
                   currentProduct !== undefined &&
-                  currentProduct._id === product._id
+                  currentProduct.id === product.id
                 "
               >
                 Hide

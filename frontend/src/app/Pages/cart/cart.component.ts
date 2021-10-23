@@ -123,10 +123,7 @@ export class CartComponent implements OnInit {
     if (!this.couponUsed) {
       this.APIService.getCoupon(this.order.couponcode).subscribe(
         (coupon: Coupon) => {
-          this.GlobalService.addDiscount(
-            coupon[0].code,
-            coupon[0].discount / 100
-          );
+          this.GlobalService.addDiscount(coupon.code, coupon.discount / 100);
           this.couponUsed = true;
         }
       );

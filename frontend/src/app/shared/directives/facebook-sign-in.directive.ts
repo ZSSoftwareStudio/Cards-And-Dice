@@ -21,7 +21,7 @@ export class AppFacebookSignInDirective {
     this.socialAuthService.signIn(FacebookLoginProvider.PROVIDER_ID);
     this.socialAuthService.authState.subscribe((user) => {
       this.APIService.authenticateUserWithSocialMedia({
-        _id: user.id,
+        id: user.id,
         name: user.name,
         email: user.email,
         image: user.photoUrl,

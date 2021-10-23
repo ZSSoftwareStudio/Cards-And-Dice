@@ -57,7 +57,7 @@ export class ProductsComponent implements OnInit {
       this.globalService.userToken.subscribe((newToken) => {
         if (newToken !== null) {
           this.apiService
-            .uploadNewProductImage(formData, newToken, product._id)
+            .uploadNewProductImage(formData, newToken, product.id)
             .subscribe((data: Product) => {
               const index = this.allProducts.indexOf(product);
               this.allProducts[index] = data;
@@ -107,7 +107,7 @@ export class ProductsComponent implements OnInit {
     this.globalService.userToken.subscribe((newToken) => {
       if (newToken !== null) {
         this.apiService
-          .updateProduct(formData, this.currentProduct._id, newToken)
+          .updateProduct(formData, this.currentProduct.id, newToken)
           .subscribe((data: Product) => {
             const index = this.allProducts.indexOf(this.currentProduct);
             this.allProducts[index] = data;
@@ -124,7 +124,7 @@ export class ProductsComponent implements OnInit {
   deleteCurrentProduct(product: Product) {
     this.globalService.userToken.subscribe((newToken) => {
       if (newToken !== null) {
-        this.apiService.deleteProduct(product._id, newToken).subscribe(() => {
+        this.apiService.deleteProduct(product.id, newToken).subscribe(() => {
           const index = this.allProducts.indexOf(this.currentProduct);
           this.allProducts.splice(index, 1);
           this.products = this.allProducts;

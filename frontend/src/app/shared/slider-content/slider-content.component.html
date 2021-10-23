@@ -14,7 +14,7 @@
   <div>
     <h2 class="fw-bold mt-5 mt-lg-0">{{ product.title }}</h2>
     <p class="my-4">{{ product.description.substring(0, 200) }}</p>
-    <a class="btn btn-primary" [routerLink]="'/products/' + product._id">
+    <a class="btn btn-primary" [routerLink]="'/products/' + product.id">
       Shop Now
     </a>
   </div>

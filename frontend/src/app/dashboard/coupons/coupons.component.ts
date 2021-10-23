@@ -69,7 +69,7 @@ export class CouponsComponent implements OnInit {
   deleteCurrentCoupon(coupon: Coupon) {
     this.globalService.userToken.subscribe((newToken) => {
       if (newToken !== null) {
-        this.apiService.deleteCoupon(coupon._id, newToken).subscribe(() => {
+        this.apiService.deleteCoupon(coupon.id, newToken).subscribe(() => {
           const index = this.coupons.indexOf(coupon);
           this.coupons.splice(index, 1);
           alert('Successfully Deleted this Coupon.');

@@ -18,7 +18,7 @@ export class CardComponent implements OnInit {
   constructor(private globalService: GlobalService) {}
 
   ngOnInit(): void {
-    this.checkIfProductHasOrder(this.product._id);
+    this.checkIfProductHasOrder(this.product.id);
   }
 
   addToCart(product: Product) {

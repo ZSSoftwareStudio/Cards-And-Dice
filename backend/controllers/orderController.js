@@ -1,12 +1,11 @@
-const Order = require("../model/orderModel");
-const User = require("../model/userModel");
 const bcrypt = require("bcrypt");
 const { createMollieClient } = require("@mollie/api-client");
+const db = require("../model/db");
 
 // Get All Orders
 const getAllOrders = async (req, res) => {
   try {
-    const orders = await Order.find();
+    const orders = db.emptyOrRows(await db.query(`SELECT * FROM Orders`, []));
     res.json(orders);
   } catch (error) {
     res.json({
@@ -35,7 +34,7 @@ const payForOrder = async (req, res, id) => {
       res.status(200).json({ url: payment.getPaymentUrl() });
     })
     .catch(async (error) => {
-      await Order.findByIdAndDelete(id);
+      await db.query("DELETE FROM Orders WHERE id=?", [id]);
       res.status(200).json({ url: `${process.env.FRONTEND_URL}/order-failed` });
       console.log(error);
     });
@@ -45,13 +44,13 @@ const payForOrder = async (req, res, id) => {
 const markOrderAsPaid = async (req, res) => {
   try {
     const { id } = req.params;
-    const previousOrder = await Order.findById(id);
-    if (!previousOrder) {
+    const previousOrder = db.emptyOrRows(
+      await db.query(`SELECT * FROM Orders WHERE id=?`, [id])
+    );
+    if (previousOrder.length === 0) {
       return res.json({ message: "No Order found with the specified id!" });
     } else {
-      await Order.findByIdAndUpdate(id, {
-        status: "incomplete",
-      });
+      await db.query("UPDATE Orders SET status='incomplete' WHERE id=?", [id]);
 
       res.json({
         message: `Your Order id is ${id}. You can track this order from order page.`,
@@ -67,39 +66,47 @@ const markOrderAsPaid = async (req, res) => {
 
 // Create New Order
 const createNewOrder = async (req, res) => {
+  const {
+    totalPrice,
+    products,
+    name,
+    email,
+    phone,
+    address,
+    country,
+    state,
+    zipcode,
+    couponcode,
+  } = req.body;
+
   try {
-    const newOrder = new Order({
-      totalPrice: req.body.totalPrice,
-      products: req.body.products,
-      name: req.body.name,
-      email: req.body.email.toLowerCase(),
-      phone: req.body.phone,
-      address: req.body.address,
-      country: req.body.country,
-      state: req.body.state,
-      zipcode: req.body.zipcode,
-      couponcode: req.body.couponcode,
-    });
-    await newOrder.save();
-    const id = newOrder.id;
-    const user = await User.find({ email: req.body.email.toLowerCase() });
+    const newOrder = await db.query(
+      `INSERT INTO Orders (totalPrice, products, name, email, phone, address, country, state, zipcode, couponcode ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?); `,
+      [
+        totalPrice,
+        JSON.stringify(products),
+        name,
+        email,
+        phone,
+        address,
+        country,
+        state,
+        zipcode,
+        couponcode,
+      ]
+    );
+    const id = newOrder.insertId;
+    const user = db.emptyOrRows(
+      await db.query(`SELECT * FROM Users WHERE email=?`, [email.toLowerCase()])
+    );
     if (user && user.length > 0) {
       payForOrder(req, res, id);
     } else {
       const hashedPassword = await bcrypt.hash(req.body.password, 10);
-      const newUser = new User({
-        name: req.body.name,
-        email: req.body.email.toLowerCase(),
-        phone: req.body.phone,
-        address: req.body.address,
-        state: req.body.state,
-        country: req.body.country,
-        zipcode: req.body.zipcode,
-        password: hashedPassword,
-      });
-
-      await newUser.save();
-
+      await db.query(
+        `INSERT INTO Users (name, email, phone, address, state, country, zipcode, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?); `,
+        [name, email, phone, address, state, country, zipcode, hashedPassword]
+      );
       payForOrder(req, res, id);
     }
   } catch (error) {
@@ -113,13 +120,14 @@ const createNewOrder = async (req, res) => {
 const deleteOrder = async (req, res) => {
   const orderId = req.params.id;
   try {
-    const currentOrder = await Order.findById(orderId);
-
-    if (!currentOrder)
+    const currentOrder = db.emptyOrRows(
+      await db.query(`SELECT * FROM Orders WHERE id=?`, [orderId])
+    );
+    if (currentOrder.length === 0) {
       return res.status(200).json({ message: "No Order found with this id" });
-    else {
-      if (currentOrder.status.toLowerCase() === "unpaid") {
-        await Order.findByIdAndDelete(orderId);
+    } else {
+      if (currentOrder[0].status.toLowerCase() === "unpaid") {
+        await db.query("DELETE FROM Orders WHERE id=?", [orderId]);
         res.json({ message: "Successfully deleted" });
       } else {
         res.json({ message: "You can't delete this order" });
@@ -134,20 +142,20 @@ const deleteOrder = async (req, res) => {
 const markOrderAsCompleted = async (req, res) => {
   try {
     const { id } = req.params;
-    const previousOrder = await Order.findById(id);
-    if (!previousOrder) {
+    const previousOrder = db.emptyOrRows(
+      await db.query(`SELECT * FROM Orders WHERE id=?`, [id])
+    );
+    if (previousOrder.length === 0) {
       return res.json({ message: "No Order found with the specified id!" });
     } else {
-      if (previousOrder.status.toLowerCase() === "complete") {
-        await Order.findByIdAndUpdate(id, {
-          status: "incomplete",
-        });
+      if (previousOrder[0].status.toLowerCase() === "complete") {
+        await db.query("UPDATE Orders SET status='incomplete' WHERE id=?", [
+          id,
+        ]);
 
         res.json({ message: "Successfully Updated" });
       } else {
-        await Order.findByIdAndUpdate(id, {
-          status: "complete",
-        });
+        await db.query("UPDATE Orders SET status='complete' WHERE id=?", [id]);
 
         res.json({ message: "Successfully Updated" });
       }

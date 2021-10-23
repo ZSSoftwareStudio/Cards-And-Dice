@@ -1,12 +1,12 @@
 const fs = require("fs");
-
-const Category = require("../model/categoryModel");
-const Product = require("../model/productModel");
+const db = require("../model/db");
 
 // Get All Categories
 const getCategories = async (req, res) => {
   try {
-    const categories = await Category.find();
+    const categories = db.emptyOrRows(
+      await db.query(`SELECT * FROM Categories`, [])
+    );
     res.json(categories);
   } catch (error) {
     res.status(500).json({
@@ -21,13 +21,11 @@ const addCategory = async (req, res) => {
   const image = req.file.path;
 
   try {
-    const newcategory = new Category({
-      title,
-      image,
-    });
-    await newcategory.save();
-
-    res.json(newcategory);
+    const newCategory = await db.query(
+      `INSERT INTO Categories (title, image) VALUES (?, ?)`,
+      [title, image]
+    );
+    res.json({ id: newCategory.insertId, title, image });
   } catch (err) {
     console.log(err);
     res.status(401).json({
@@ -36,34 +34,51 @@ const addCategory = async (req, res) => {
   }
 };
 
-// Edit a category based on id
-const editCategory = async (req, res) => {
-  const { title } = req.body;
+const changeImage = async (req, res) => {
   const image = req.file.path;
   const categoryId = req.params.id;
 
+  const currentCategory = db.emptyOrRows(
+    await db.query(`SELECT * FROM Categories WHERE id=?`, [categoryId])
+  );
+
+  if (currentCategory.length === 0)
+    return res.status(400).json({ message: "No Category found with this id" });
+  else {
+    fs.unlink(currentCategory[0].image, async (err) => {
+      if (err)
+        return res.status(500).json({ message: "Couldn't upload image." });
+      else {
+        await db.query("UPDATE Categories SET image=? WHERE id=?", [
+          image,
+          categoryId,
+        ]);
+        res.json({ ...currentCategory[0], image });
+      }
+    });
+  }
+};
+
+// Edit a category based on id
+const editCategory = async (req, res) => {
+  const { title } = req.body;
+  const categoryId = req.params.id;
+
   try {
-    const currentCategory = await Category.findById(categoryId);
-    console.log(currentCategory);
-    if (!currentCategory)
-      return res
-        .status(400)
-        .json({ message: "No Category found with this id" });
+    const currentCategory = db.emptyOrRows(
+      await db.query(`SELECT * FROM Categories WHERE id=?`, [categoryId])
+    );
+    if (currentCategory.length === 0)
+      return res.json({ message: "No Category found with this id" });
     else {
-      fs.unlink(currentCategory.image, async (err) => {
-        if (err)
-          return res.status(500).json({ message: "Couldn't upload image." });
-        else {
-          const updatedCategory = await Category.findByIdAndUpdate(categoryId, {
-            title,
-            image,
-          });
-          res.json(updatedCategory);
-        }
-      });
+      await db.query(`UPDATE Categories SET title=? WHERE id=?`, [
+        title,
+        categoryId,
+      ]);
+      res.json({ title });
     }
   } catch (error) {
-    res.status(500).json({ message: "Server Error" });
+    res.json({ message: "Server Error" });
   }
 };
 
@@ -71,21 +86,17 @@ const editCategory = async (req, res) => {
 const deleteCategory = async (req, res) => {
   const categoryId = req.params.id;
   try {
-    const currentCategory = await Category.findById(categoryId);
-    console.log(currentCategory);
-    if (!currentCategory)
-      return res
-        .status(400)
-        .json({ message: "No Category found with this id" });
+    const currentCategory = db.emptyOrRows(
+      await db.query(`SELECT * FROM Categories WHERE id=?`, [categoryId])
+    );
+    if (currentCategory.length === 0)
+      return res.json({ message: "No Category found with this id" });
     else {
-      fs.unlink(currentCategory.image, async (err) => {
+      fs.unlink(currentCategory[0].image, async (err) => {
         if (err)
-          return res
-            .status(500)
-            .json({ message: "Couldn't delete Category image." });
+          return res.json({ message: "Couldn't delete Category image." });
         else {
-          await Category.findByIdAndDelete(categoryId);
-          await Product.deleteMany({ category: currentCategory._id });
+          await db.query(`DELETE FROM Categories WHERE id=?`, [categoryId]);
           res.json({ message: "Successfully deleted" });
         }
       });
@@ -98,6 +109,7 @@ const deleteCategory = async (req, res) => {
 module.exports = {
   getCategories,
   addCategory,
+  changeImage,
   editCategory,
   deleteCategory,
 };

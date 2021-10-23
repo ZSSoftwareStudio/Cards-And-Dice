@@ -66,7 +66,7 @@ export class UsersComponent implements OnInit {
     this.globalService.userToken.subscribe((newToken) => {
       if (newToken !== null) {
         this.apiService
-          .changeUserRole(user._id, newToken, event.target.value)
+          .changeUserRole(user.id, newToken, event.target.value)
           .subscribe((data: { message: string }) => {
             const index = this.users.indexOf(user);
             this.allUsers[index] = {

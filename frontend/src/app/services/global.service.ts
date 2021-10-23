@@ -58,11 +58,11 @@ export class GlobalService {
 
   addOrder(product: Product, quantity: number) {
     let products = this._orders.products;
-    const currentProduct = products.find((item) => item.product == product._id);
+    const currentProduct = products.find((item) => item.product == product.id);
 
     if (currentProduct === undefined) {
       products.push({
-        product: product._id,
+        product: product.id,
         quantity: quantity,
       });
     } else {
@@ -82,7 +82,7 @@ export class GlobalService {
 
   deleteItem(product: Product) {
     let products = this._orders.products;
-    const currentProduct = products.find((item) => item.product == product._id);
+    const currentProduct = products.find((item) => item.product == product.id);
 
     if (currentProduct !== undefined) {
       const index = products.indexOf(currentProduct);
@@ -101,7 +101,7 @@ export class GlobalService {
 
   decrementProductQuantity(product: Product, quantity: number) {
     let products = this._orders.products;
-    const currentProduct = products.find((item) => item.product == product._id);
+    const currentProduct = products.find((item) => item.product == product.id);
 
     if (currentProduct !== undefined) {
       const index = products.indexOf(currentProduct);

@@ -1,14 +1,12 @@
 const fs = require("fs");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-
-const User = require("../model/userModel");
-const Order = require("../model/orderModel");
+const db = require("../model/db");
 
 // Get All Users
 const getAllUsers = async (req, res) => {
   try {
-    const users = await User.find();
+    const users = db.emptyOrRows(await db.query(`SELECT * FROM Users`, []));
     res.json(users);
   } catch (error) {
     res.status(500).json({
@@ -21,7 +19,9 @@ const getAllUsers = async (req, res) => {
 const registerAccount = async (req, res) => {
   const { name, email, password, role } = req.body;
 
-  const user = await User.find({ email: email.toLowerCase() });
+  const user = db.emptyOrRows(
+    await db.query(`SELECT * FROM Users WHERE email=?`, [email.toLowerCase()])
+  );
   if (user && user.length > 0) {
     res.status(401).json({
       message: "User Email Already Exists",
@@ -29,15 +29,14 @@ const registerAccount = async (req, res) => {
   } else {
     try {
       const hashedPassword = await bcrypt.hash(password, 10);
-      const newUser = new User({
-        name,
-        email: email.toLowerCase(),
-        password: hashedPassword,
-        role,
-      });
-      await newUser.save();
+      await db.query(
+        `INSERT INTO Users (name, email, password, role) VALUES (?, ?, ?, ?); `,
+        [name, email, hashedPassword, role]
+      );
       res.status(200).json({
-        ...newUser._doc,
+        name,
+        email,
+        role,
         message: "Signup was successful!",
       });
     } catch (error) {
@@ -53,7 +52,9 @@ const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    const user = await User.find({ email: email.toLowerCase() });
+    const user = db.emptyOrRows(
+      await db.query(`SELECT * FROM Users WHERE email=?`, [email.toLowerCase()])
+    );
     if (user && user.length > 0) {
       const isValidPassword = await bcrypt.compare(password, user[0].password);
 
@@ -61,7 +62,7 @@ const loginUser = async (req, res) => {
         // generate token
         const token = jwt.sign(
           {
-            _id: user[0]._id,
+            _id: user[0].id,
             name: user[0].name,
             email: user[0].email,
             image: user[0].image,
@@ -100,11 +101,13 @@ const loginUserWithSocialMedia = async (req, res) => {
   const { email } = req.body;
 
   try {
-    const user = await User.find({ email: email.toLowerCase() });
+    const user = db.emptyOrRows(
+      await db.query(`SELECT * FROM Users WHERE email=?`, [email.toLowerCase()])
+    );
     if (user && user.length > 0) {
       const token = jwt.sign(
         {
-          _id: user[0]._id,
+          _id: user[0].id,
           name: user[0].name,
           email: user[0].email,
           image: user[0].image,
@@ -135,7 +138,10 @@ const changeRole = async (req, res) => {
   const userID = req.params.id;
 
   try {
-    await User.findByIdAndUpdate(userID, { role: req.body.role });
+    await db.query("UPDATE Users SET role=? WHERE id=?", [
+      req.body.role,
+      userID,
+    ]);
     res.json({ message: "Successfully Updated!" });
   } catch (error) {
     res.status(200).json({
@@ -149,8 +155,10 @@ const getProfile = async (req, res) => {
   const userID = req.userId;
 
   try {
-    const currentUser = await User.findById(userID).populate("orders");
-    res.json(currentUser);
+    const currentUser = db.emptyOrRows(
+      await db.query(`SELECT * FROM Users WHERE id=?`, [userID])
+    );
+    res.json(currentUser[0]);
   } catch (error) {
     res.status(500).json({ message: "Server Error" });
   }
@@ -160,7 +168,9 @@ const getProfile = async (req, res) => {
 const getOrderHistory = async (req, res) => {
   const username = req.username;
   try {
-    const orders = await Order.find({ email: username });
+    const orders = db.emptyOrRows(
+      await db.query(`SELECT * FROM Orders WHERE email=?`, [username])
+    );
     res.json(orders);
   } catch (error) {
     res.status(500).json({ message: "Server Error" });
@@ -172,18 +182,34 @@ const updateProfilePhoto = async (req, res) => {
   const userID = req.userId;
   const image = req.file.path;
 
+  console.log(userID, image);
+
   try {
-    const currentUser = await User.findById(userID);
+    const currentUser = db.emptyOrRows(
+      await db.query(`SELECT * FROM Users WHERE id=?`, [userID])
+    );
 
-    fs.unlink(currentUser.image, async (err) => {
-      if (err)
-        res.status(500).json({ message: "Couldn't update the profile photo!" });
+    if (currentUser.length !== 0) {
+      if (currentUser[0].image !== "public/users/default-avatar.png") {
+        fs.unlink(currentUser[0].image, async (err) => {
+          if (err)
+            res
+              .status(500)
+              .json({ message: "Couldn't update the profile photo!" });
 
-      await User.findByIdAndUpdate(userID, {
-        image,
-      });
-      res.json({ message: "Successfully uploaded new profile photo!" });
-    });
+          await db.query("UPDATE Users SET image=? WHERE id=?", [
+            image,
+            userID,
+          ]);
+          res.json({ message: "Successfully uploaded new profile photo!" });
+        });
+      } else {
+        await db.query("UPDATE Users SET image=? WHERE id=?", [image, userID]);
+        res.json({ message: "Successfully uploaded new profile photo!" });
+      }
+    } else {
+      res.json({ message: "No User Found" });
+    }
   } catch (error) {
     res.status(500).json({ message: "Couldn't update the profile photo!" });
   }
@@ -195,16 +221,11 @@ const updateProfile = async (req, res) => {
   const { name, address, country, state, zipcode, phone } = req.body;
 
   try {
-    const updatedUser = await User.findByIdAndUpdate(userID, {
-      name,
-      address,
-      phone,
-      country,
-      state,
-      zipcode,
-    });
+    await db.query(
+      "UPDATE Users SET name=?, address=?, country=?, state=?, zipcode=?, phone=? WHERE id=?",
+      [name, address, country, state, zipcode, phone, userID]
+    );
     res.json({
-      ...updatedUser._doc,
       name,
       address,
       phone,
@@ -221,18 +242,25 @@ const updateProfile = async (req, res) => {
 // Change Current User's Password
 const changePassword = async (req, res) => {
   const { currentPassword, newPassword } = req.body;
-  try {
-    const user = await User.findById(req.userId);
+  const userID = req.userId;
 
-    if (user) {
+  try {
+    const user = db.emptyOrRows(
+      await db.query(`SELECT * FROM Users WHERE id=?`, [userID])
+    );
+
+    if (user.length !== 0) {
       const isValidPassword = await bcrypt.compare(
         currentPassword,
-        user.password
+        user[0].password
       );
 
       if (isValidPassword) {
         const hashedPassword = await bcrypt.hash(newPassword, 10);
-        await User.findByIdAndUpdate(req.userId, { password: hashedPassword });
+        await db.query("UPDATE Users SET password=? WHERE id=?", [
+          hashedPassword,
+          userID,
+        ]);
         res.json({ message: "Successfully Updated!" });
       } else {
         res.status(401).json({
@@ -256,7 +284,7 @@ const reactivateUser = async (req, res) => {
   const userID = req.userId;
 
   try {
-    await User.findByIdAndUpdate(userID, { status: "active" });
+    await db.query("UPDATE Users SET status=? WHERE id=?", ["active", userID]);
     res.json({ message: "Successfully Activated your Account!" });
   } catch (error) {
     res.status(401).json({
@@ -270,7 +298,10 @@ const deactivateUser = async (req, res) => {
   const userID = req.userId;
 
   try {
-    await User.findByIdAndUpdate(userID, { status: "inactive" });
+    await db.query("UPDATE Users SET status=? WHERE id=?", [
+      "inactive",
+      userID,
+    ]);
     res.json({ message: "Successfully Deactivated your Account!" });
   } catch (error) {
     res.status(401).json({

@@ -1,9 +1,9 @@
-const Coupon = require("../model/couponModel");
+const db = require("../model/db");
 
 // Get All Coupon Codes
 const getAllCoupons = async (req, res) => {
   try {
-    const coupons = await Coupon.find();
+    const coupons = db.emptyOrRows(await db.query(`SELECT * FROM Codes`, []));
     res.json(coupons);
   } catch (error) {
     res.status(500).json({
@@ -14,8 +14,10 @@ const getAllCoupons = async (req, res) => {
 
 const getCoupon = async (req, res) => {
   try {
-    const coupon = await Coupon.find({ code: req.params.id });
-    res.json(coupon);
+    const coupon = db.emptyOrRows(
+      await db.query(`SELECT * FROM Codes WHERE code=?`, [req.params.id])
+    );
+    res.json(coupon[0]);
   } catch (error) {
     res.status(500).json({
       message: "Couldn't Fetch Data from Database",
@@ -28,17 +30,19 @@ const addCoupon = async (req, res) => {
   const { code, discount } = req.body;
 
   try {
-    const oldCouponCode = await Coupon.find({ code });
-    if (oldCouponCode[0]) {
+    const oldCoupon = db.emptyOrRows(
+      await db.query(`SELECT * FROM Codes WHERE code=?`, [code])
+    );
+    if (oldCoupon.length !== 0) {
       return res.json({ message: "Code Already exists" });
     } else {
-      const newCoupon = new Coupon({
-        code,
-        discount,
-      });
-      await newCoupon.save();
-
-      res.json(newCoupon);
+      const newCoupon = await db.query(
+        `INSERT INTO Codes (code, discount) VALUES (?, ?); `,
+        [code, discount]
+      );
+      if (newCoupon.affectedRows) {
+        res.json({ id: newCoupon.insertId, code, discount });
+      }
     }
   } catch (err) {
     res.status(401).json({
@@ -51,11 +55,13 @@ const addCoupon = async (req, res) => {
 const deleteCoupon = async (req, res) => {
   const couponId = req.params.id;
   try {
-    const currentCoupon = await Coupon.findById(couponId);
-    if (!currentCoupon)
-      return res.status(400).json({ message: "No Coupon found with this id" });
+    const currentCoupon = db.emptyOrRows(
+      await db.query(`SELECT * FROM Codes WHERE id=?`, [couponId])
+    );
+    if (currentCoupon.length === 0)
+      return res.json({ message: "No Coupon found with this id" });
     else {
-      await Coupon.findByIdAndDelete(couponId);
+      await db.query("DELETE FROM Codes WHERE id=?", [couponId]);
       res.json({ message: "Successfully deleted" });
     }
   } catch (error) {

@@ -48,10 +48,10 @@ export class CategoriesComponent implements OnInit {
       this.globalService.userToken.subscribe((newToken) => {
         if (newToken !== null) {
           this.apiService
-            .uploadNewCategoryImage(formData, newToken, category._id)
+            .uploadNewCategoryImage(formData, newToken, category.id)
             .subscribe((data: Category) => {
               const index = this.categories.indexOf(category);
-              this.categories[index] = data;
+              this.categories[index] = { ...this.categories[index], ...data };
               alert('Successfully changed to the new Image.');
             });
         }
@@ -98,10 +98,10 @@ export class CategoriesComponent implements OnInit {
     this.globalService.userToken.subscribe((newToken) => {
       if (newToken !== null) {
         this.apiService
-          .updateCategory(formData, this.currentCategory._id, newToken)
-          .subscribe((data: Category) => {
+          .updateCategory(formData, this.currentCategory.id, newToken)
+          .subscribe((data: any) => {
             const index = this.categories.indexOf(this.currentCategory);
-            this.categories[index] = data;
+            this.categories[index] = { ...this.categories[index], ...data };
             alert('Successfully Updated this Category.');
             setTimeout(() => {
               this.hideCategory();
@@ -114,7 +114,7 @@ export class CategoriesComponent implements OnInit {
   deleteCurrentCategory(category: Category) {
     this.globalService.userToken.subscribe((newToken) => {
       if (newToken !== null) {
-        this.apiService.deleteCategory(category._id, newToken).subscribe(() => {
+        this.apiService.deleteCategory(category.id, newToken).subscribe(() => {
           const index = this.categories.indexOf(this.currentCategory);
           this.categories.splice(index, 1);
           alert('Successfully Deleted this Category.');

@@ -33,7 +33,7 @@
               <div class="row text-muted">{{ product.title }}</div>
             </div>
             <div class="col mx-2">
-              {{ currency }}{{ product.price }} x {{ quantity[product._id] }}
+              {{ currency }}{{ product.price }} x {{ quantity[product.id] }}
             </div>
             <div class="col">
               <a class="mx-2" (click)="incrementProductQuantity(product)">

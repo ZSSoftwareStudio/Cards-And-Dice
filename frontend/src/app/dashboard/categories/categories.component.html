@@ -134,7 +134,7 @@
                 (click)="manageCategory(category)"
                 *ngIf="
                   currentCategory === undefined ||
-                  currentCategory._id !== category._id
+                  currentCategory.id !== category.id
                 "
               >
                 Manage
@@ -145,7 +145,7 @@
                 (click)="hideCategory()"
                 *ngIf="
                   currentCategory !== undefined &&
-                  currentCategory._id === category._id
+                  currentCategory.id === category.id
                 "
               >
                 Hide

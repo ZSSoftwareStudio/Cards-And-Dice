@@ -223,8 +223,8 @@
                 onerror="this.onerror=null; this.src='assets/default-avatar.png'"
               />
             </th>
-            <td *ngIf="user._id !== profile._id">{{ user.name }}</td>
-            <td *ngIf="user._id === profile._id">You</td>
+            <td *ngIf="user.id !== profile._id">{{ user.name }}</td>
+            <td *ngIf="user.id === profile._id">You</td>
             <td>@{{ user.email.split("@")[0] }}</td>
             <td>
               <span *ngIf="user.role.toLowerCase() === 'user'">
@@ -243,10 +243,8 @@
                 class="btn btn-primary"
                 type="button"
                 (click)="manageUser(user)"
-                *ngIf="
-                  currentUser === undefined || currentUser._id !== user._id
-                "
-                [disabled]="user._id === profile._id"
+                *ngIf="currentUser === undefined || currentUser.id !== user.id"
+                [disabled]="user.id === profile._id"
               >
                 Manage
               </button>
@@ -254,10 +252,8 @@
                 class="btn btn-primary"
                 type="button"
                 (click)="hideUser()"
-                *ngIf="
-                  currentUser !== undefined && currentUser._id === user._id
-                "
-                [disabled]="user._id === profile._id"
+                *ngIf="currentUser !== undefined && currentUser.id === user.id"
+                [disabled]="user.id === profile._id"
               >
                 Hide
               </button>

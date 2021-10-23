@@ -1,14 +1,12 @@
 const fs = require("fs");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-
-const Product = require("../model/productModel");
-const Category = require("../model/categoryModel");
+const db = require("../model/db");
 
 // Get All Products
 const getProducts = async (req, res) => {
   try {
-    const products = await Product.find().populate("category");
+    const products = db.emptyOrRows(
+      await db.query(`SELECT * FROM Products`, [])
+    );
     res.json(products);
   } catch (error) {
     res.status(500).json({
@@ -20,9 +18,11 @@ const getProducts = async (req, res) => {
 // Get a Single Product
 const getProduct = async (req, res) => {
   try {
-    const products = await Product.findById(req.params.id).populate("category");
-    if (products) {
-      res.json(products);
+    const products = db.emptyOrRows(
+      await db.query(`SELECT * FROM Products WHERE id=?`, [req.params.id])
+    );
+    if (products.length !== 0) {
+      res.json(products[0]);
     } else {
       res.json({ message: "Product not found" });
     }
@@ -40,24 +40,30 @@ const addProduct = async (req, res) => {
   const owner = req.userId;
 
   try {
-    const oldcategory = await Category.findById(category);
-    if (!oldcategory) {
+    const oldcategory = db.emptyOrRows(
+      await db.query(`SELECT * FROM Categories WHERE id=?`, [category])
+    );
+    if (oldcategory.length === 0) {
       fs.unlink(image, async (err) => {
         if (err) return res.json({ message: "Server Error" });
         return res.json({ message: "Category not found" });
       });
     } else {
-      const newProduct = new Product({
+      const newProduct = await db.query(
+        `INSERT INTO Products (title, description, image, price, category, owner) VALUES (?, ?, ?, ?, ?, ?)`,
+        [title, description, image, price, category, owner]
+      );
+
+      res.json({
+        id: newProduct.insertId,
         title,
         description,
+        image,
         price,
         category,
-        image,
         owner,
+        message: "Uploaded Successfully",
       });
-      await newProduct.save();
-
-      res.json(newProduct);
     }
   } catch (err) {
     console.log(err);
@@ -73,19 +79,19 @@ const editProduct = async (req, res) => {
   const productId = req.params.id;
 
   try {
-    const currentProduct = await Product.findById(productId);
+    const currentProduct = db.emptyOrRows(
+      await db.query(`SELECT * FROM Products WHERE id=?`, [productId])
+    );
 
-    if (!currentProduct)
-      return res.status(400).json({ message: "No Product found with this id" });
+    if (currentProduct.length === 0)
+      return res.json({ message: "No Product found with this id" });
     else {
-      const updatedProduct = await Product.findByIdAndUpdate(productId, {
-        title,
-        description,
-        price,
-        category,
-      });
+      await db.query(
+        "UPDATE Products SET title = ?, description = ?, price = ?, category = ? WHERE id = ?",
+        [title, description, price, category, productId]
+      );
       res.json({
-        ...updatedProduct.toObject(),
+        ...currentProduct[0],
         title,
         description,
         price,
@@ -101,19 +107,22 @@ const changeImage = async (req, res) => {
   const image = req.file.path;
   const productId = req.params.id;
 
-  const currentProduct = await Product.findById(productId);
+  const currentProduct = db.emptyOrRows(
+    await db.query(`SELECT * FROM Products WHERE id=?`, [productId])
+  );
 
-  if (!currentProduct)
-    return res.status(400).json({ message: "No Product found with this id" });
+  if (currentProduct.length === 0)
+    return res.json({ message: "No Product found with this id" });
   else {
-    fs.unlink(currentProduct.image, async (err) => {
+    fs.unlink(currentProduct[0].image, async (err) => {
       if (err)
         return res.status(500).json({ message: "Couldn't upload image." });
       else {
-        const updatedProduct = await Product.findByIdAndUpdate(productId, {
+        await db.query("UPDATE Products SET image = ? WHERE id = ?", [
           image,
-        });
-        res.json({ ...updatedProduct.toObject(), image });
+          productId,
+        ]);
+        res.json({ ...currentProduct[0], image });
       }
     });
   }
@@ -123,18 +132,16 @@ const changeImage = async (req, res) => {
 const deleteProduct = async (req, res) => {
   const productId = req.params.id;
   try {
-    const currentProduct = await Product.findById(productId);
-
-    if (!currentProduct)
-      return res.status(400).json({ message: "No Product found with this id" });
+    const currentProduct = db.emptyOrRows(
+      await db.query(`SELECT * FROM Products WHERE id=?`, [productId])
+    );
+    if (currentProduct.length === 0)
+      return res.json({ message: "No Product found with this id" });
     else {
-      fs.unlink(currentProduct.image, async (err) => {
-        if (err)
-          return res
-            .status(500)
-            .json({ message: "Couldn't delete product image." });
+      fs.unlink(currentProduct[0].image, async (err) => {
+        if (err) return res.json({ message: "Couldn't delete product image." });
         else {
-          await Product.findByIdAndDelete(productId);
+          await db.query("DELETE FROM Products WHERE id = ?", [productId]);
           res.json({ message: "Successfully deleted" });
         }
       });

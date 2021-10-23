@@ -44,16 +44,4 @@ const PORT = process.env.PORT || 8000;
 
 app.listen(PORT, () => {
   console.log(`Server is listening on http://localhost:${PORT}`);
-  mongoose
-    .connect(process.env.MONGO_CONNECTION_URL, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    })
-    .then(() => {
-      console.log("Database Connected");
-    })
-    .catch((err) => {
-      console.log("Couldn't Connect to Database");
-      console.log(`Error: ${err.message}`);
-    });
 });

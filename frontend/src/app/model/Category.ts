@@ -1,5 +1,5 @@
 export default interface Category {
-  _id?: string;
+  id?: string;
   title: string;
   image: string;
 }
