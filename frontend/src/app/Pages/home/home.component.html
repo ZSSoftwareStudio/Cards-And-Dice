@@ -4,7 +4,12 @@
       <app-categories [categories]="this.categories"></app-categories>
     </div>
     <div class="col-lg-9 my-auto">
-      <app-slider [sliderProducts]="sliderProducts"></app-slider>
+      <app-slider
+        [sliderProducts]="sliderProducts"
+        *ngIf="
+          this.sliderProducts !== undefined && this.sliderProducts.length !== 0
+        "
+      ></app-slider>
     </div>
   </div>
 </div>

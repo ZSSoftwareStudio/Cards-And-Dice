@@ -1,4 +1,4 @@
-<app-dashboard>
+<app-dashboard *ngIf="currentUser !== undefined">
   <h1>Welcome to Dashboard</h1>
   <p class="lead my-3" *ngIf="currentUser.role.toLowerCase() === 'user'">
     Here you can view your previous orders, profile, change profile etc.
