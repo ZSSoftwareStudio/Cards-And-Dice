@@ -17,8 +17,6 @@ import {
   FacebookLoginProvider,
 } from 'angularx-social-login';
 import { environment } from 'src/environments/environment';
-import { AppGoogleSignInDirective } from './directives/app-google-sign-in.directive';
-import { AppFacebookSignInDirective } from './directives/facebook-sign-in.directive';
 
 const components = [
   NavbarComponent,
@@ -29,10 +27,8 @@ const components = [
   FooterComponent,
 ];
 
-const directives = [AppGoogleSignInDirective, AppFacebookSignInDirective];
-
 @NgModule({
-  declarations: [...components, ...directives],
+  declarations: [...components],
   imports: [CommonModule, SharedRoutingModule, FormsModule, SocialLoginModule],
   providers: [
     {
@@ -54,6 +50,6 @@ const directives = [AppGoogleSignInDirective, AppFacebookSignInDirective];
       } as SocialAuthServiceConfig,
     },
   ],
-  exports: [...components, ...directives],
+  exports: [...components],
 })
 export class SharedModule {}

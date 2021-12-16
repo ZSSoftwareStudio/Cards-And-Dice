@@ -9,5 +9,4 @@ export default interface User {
   zipcode?: String;
   image: string;
   role: string;
-  provider: string;
 }

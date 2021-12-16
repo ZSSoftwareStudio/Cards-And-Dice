@@ -4,6 +4,8 @@ import jwt_decode from 'jwt-decode';
 import { Router } from '@angular/router';
 import Order from '../model/Order';
 import Product from '../model/Product';
+import { APIService } from './api.service';
+import User from '../model/User';
 
 @Injectable({
   providedIn: 'root',
@@ -12,15 +14,19 @@ export class GlobalService {
   userToken = new BehaviorSubject(this.access_token);
   orders = new BehaviorSubject(this._orders);
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private apiService: APIService) {}
 
   set access_token(value) {
     this.userToken.next(value); // this will make sure to tell every subscriber about the change.
     if (value === null) {
       this.router.navigateByUrl('/');
       localStorage.removeItem('access_token');
+      localStorage.removeItem('current_user');
     } else {
       localStorage.setItem('access_token', value);
+      this.apiService.getUserProfile(value).subscribe((data: any) => {
+        localStorage.setItem('current_user', JSON.stringify(data));
+      });
     }
   }
 
@@ -48,9 +54,9 @@ export class GlobalService {
     return JSON.parse(localStorage.getItem('orders')) as Order;
   }
 
-  decodeJWT(token: string) {
+  decodeJWT() {
     try {
-      return jwt_decode(token);
+      return JSON.parse(localStorage.getItem('current_user')) as User;
     } catch (err) {
       return null;
     }
@@ -124,7 +130,9 @@ export class GlobalService {
   addDiscount(code: string, discount: number) {
     this._orders = {
       ...this._orders,
-      totalPrice: this._orders.totalPrice * discount,
+      totalPrice: this._orders.totalPrice
+        ? this._orders.totalPrice * (discount / 100)
+        : this._orders.totalPrice,
       couponcode: code,
     };
   }

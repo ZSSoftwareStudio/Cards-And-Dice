@@ -31,7 +31,7 @@ export class CartComponent implements OnInit {
     country: undefined,
     zipcode: undefined,
   };
-  password: undefined;
+  password: null;
   couponUsed = false;
   currency = environment.currency;
 
@@ -98,23 +98,22 @@ export class CartComponent implements OnInit {
   }
 
   createNewOrder() {
-    let data = {};
-    if (this.password === null) {
-      data = {
-        ...this.user,
-        ...this.order,
-        totalPrice: this.totalPrice + 5,
-      };
-    } else {
-      data = {
-        ...this.user,
-        ...this.order,
-        password: this.password,
-        totalPrice: this.totalPrice + 5,
-      };
-    }
-
+    let data = {
+      totalPrice: this.totalPrice + 5,
+      products: JSON.stringify(this.order.products),
+      name: this.user.name,
+      email: this.user.email,
+      phone: this.user.phone,
+      address: this.user.address,
+      country: this.user.country,
+      state: this.user.state,
+      zipcode: this.user.zipcode,
+      couponcode: this.order.couponcode ? this.order.couponcode : '',
+      password: this.password,
+    };
+    console.log(data);
     this.APIService.createNewOrder(data).subscribe((data: { url: string }) => {
+      console.log(data);
       window.location.href = data.url;
     });
   }
@@ -123,7 +122,8 @@ export class CartComponent implements OnInit {
     if (!this.couponUsed) {
       this.APIService.getCoupon(this.order.couponcode).subscribe(
         (coupon: Coupon) => {
-          this.GlobalService.addDiscount(coupon.code, coupon.discount / 100);
+          console.log(coupon);
+          this.GlobalService.addDiscount(coupon[0].code, coupon[0].discount);
           this.couponUsed = true;
         }
       );

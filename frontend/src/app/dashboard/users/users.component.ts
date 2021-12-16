@@ -29,7 +29,7 @@ export class UsersComponent implements OnInit {
   ngOnInit(): void {
     this.globalService.userToken.subscribe((newToken) => {
       if (newToken !== null) {
-        this.profile = this.globalService.decodeJWT(newToken) as User;
+        this.profile = this.globalService.decodeJWT();
         this.apiService.getAllUsers(newToken).subscribe((data: User[]) => {
           this.users = data;
           this.allUsers = data;

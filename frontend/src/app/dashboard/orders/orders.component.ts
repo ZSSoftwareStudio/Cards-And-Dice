@@ -47,7 +47,7 @@ export class OrdersComponent implements OnInit {
   ngOnInit(): void {
     this.GlobalService.userToken.subscribe((newToken) => {
       if (newToken !== null) {
-        this.currentUser = this.GlobalService.decodeJWT(newToken) as User;
+        this.currentUser = this.GlobalService.decodeJWT();
 
         if (this.currentUser.role.toLowerCase() === 'user') {
           this.apiService.getOrders(newToken).subscribe((data) => {
@@ -66,14 +66,10 @@ export class OrdersComponent implements OnInit {
 
   formatDate(date: string) {
     const createdAt = new Date(date);
-    var datestring =
-      createdAt.getDate() +
-      ' ' +
-      this.months[createdAt.getMonth() + 1] +
-      ', ' +
-      createdAt.getFullYear();
 
-    return datestring;
+    return `${createdAt.getDate()} ${
+      this.months[createdAt.getMonth()]
+    } ${createdAt.getFullYear()}`;
   }
 
   changeCurrentOrder(order) {

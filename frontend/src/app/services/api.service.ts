@@ -11,11 +11,11 @@ import Coupon from '../model/Coupon';
   providedIn: 'root',
 })
 export class APIService {
-  productsEndpoint: string = 'products';
-  categoriesEndpoint: string = 'categories';
-  usersEndpoint: string = 'users';
-  ordersEndpoint: string = 'orders';
-  couponsEndpoint: string = 'coupons';
+  productsEndpoint: string = 'api/products';
+  categoriesEndpoint: string = 'api/categories';
+  usersEndpoint: string = 'api/users';
+  ordersEndpoint: string = 'api/orders';
+  couponsEndpoint: string = 'api/coupons';
 
   constructor(private http: HttpClient) {}
 
@@ -49,7 +49,7 @@ export class APIService {
   }
 
   updateUserProfilePhoto(formData: FormData, token: string) {
-    return this.http.put(
+    return this.http.post(
       `${environment.apiURL}/${this.usersEndpoint}/profilePhoto`,
       formData,
       {
@@ -123,7 +123,7 @@ export class APIService {
   }
 
   uploadNewProductImage(formData: FormData, token: string, productId: string) {
-    return this.http.put<Product>(
+    return this.http.post<Product>(
       `${environment.apiURL}/${this.productsEndpoint}/${productId}/changeImage`,
       formData,
       {
@@ -180,7 +180,7 @@ export class APIService {
     token: string,
     categoryId: string
   ) {
-    return this.http.put<Category>(
+    return this.http.post<Category>(
       `${environment.apiURL}/${this.categoriesEndpoint}/${categoryId}/changeImage`,
       formData,
       {
@@ -306,7 +306,13 @@ export class APIService {
   createNewOrder(data) {
     return this.http.post(
       `${environment.apiURL}/${this.ordersEndpoint}/`,
-      data
+      data,
+      {
+        headers: new HttpHeaders({
+          'content-type': 'application/json',
+          accept: 'application/json',
+        }),
+      }
     );
   }
 
